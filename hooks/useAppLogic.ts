@@ -13,14 +13,38 @@ const DEFAULT_PROFILE: Profile = {
 
 export const useAppLogic = () => {
   const [state, setState] = useState<AppState>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.error("Failed to parse storage", e);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        
+        // Validate and migrate data structure
+        if (parsed && Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+          const migratedProfiles = parsed.profiles.map((p: any) => ({
+            ...p,
+            // Ensure habits is an array
+            habits: Array.isArray(p.habits) ? p.habits : [],
+            // Ensure themeColor exists (migration for old data)
+            themeColor: p.themeColor || 'teal'
+          }));
+
+          // Ensure activeProfileId points to an existing profile
+          let activeId = parsed.activeProfileId;
+          if (!migratedProfiles.find((p: any) => p.id === activeId)) {
+            activeId = migratedProfiles[0].id;
+          }
+
+          return {
+            profiles: migratedProfiles,
+            activeProfileId: activeId
+          };
+        }
       }
+    } catch (e) {
+      console.error("Failed to load state", e);
     }
+    
+    // Default fallback if storage is empty or invalid
     return {
       profiles: [DEFAULT_PROFILE],
       activeProfileId: DEFAULT_PROFILE.id,
@@ -32,7 +56,8 @@ export const useAppLogic = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const activeProfile = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+  // Safety fallback if state is somehow invalid
+  const activeProfile = state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0] || DEFAULT_PROFILE;
 
   const setActiveProfile = (id: string) => {
     setState(prev => ({ ...prev, activeProfileId: id }));
@@ -63,9 +88,11 @@ export const useAppLogic = () => {
     if (state.profiles.length <= 1) return; // Prevent deleting last profile
     setState(prev => {
       const newProfiles = prev.profiles.filter(p => p.id !== id);
+      // If we deleted the active profile, switch to the first one
+      const nextActiveId = prev.activeProfileId === id ? newProfiles[0].id : prev.activeProfileId;
       return {
         profiles: newProfiles,
-        activeProfileId: newProfiles[0].id
+        activeProfileId: nextActiveId
       };
     });
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import clsx from 'clsx';
 import { Habit } from '../types';
 
