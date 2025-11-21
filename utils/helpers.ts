@@ -24,7 +24,6 @@ export const isHabitCompletedToday = (habit: Habit): boolean => {
 };
 
 export const calculateStreak = (completedDates: string[]): number => {
-  // Simple consecutive day check backwards from today/yesterday
   const today = getTodayISO();
   const yesterday = getYesterdayISO();
   
@@ -34,7 +33,6 @@ export const calculateStreak = (completedDates: string[]): number => {
   let streak = 0;
   let checkDate = new Date(today);
   
-  // If not done today, start checking from yesterday
   if (!completedDates.includes(today)) {
      if (!completedDates.includes(yesterday)) {
          return 0; 
@@ -42,7 +40,6 @@ export const calculateStreak = (completedDates: string[]): number => {
      checkDate = new Date(yesterday);
   }
 
-  // Check backwards
   while (true) {
       const year = checkDate.getFullYear();
       const month = String(checkDate.getMonth() + 1).padStart(2, '0');
@@ -57,6 +54,88 @@ export const calculateStreak = (completedDates: string[]): number => {
       }
   }
   return streak;
+};
+
+// --- Analytics Helpers ---
+
+export const calculateBestStreak = (completedDates: string[]): number => {
+  if (completedDates.length === 0) return 0;
+  
+  // Sort chronologically
+  const sorted = [...completedDates].sort();
+  let maxStreak = 1;
+  let currentStreak = 1;
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prevDate = new Date(sorted[i - 1]);
+    const currDate = new Date(sorted[i]);
+    
+    // Check if strictly consecutive (diff is 1 day)
+    const diffTime = Math.abs(currDate.getTime() - prevDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+    if (diffDays === 1) {
+      currentStreak++;
+    } else if (diffDays > 1) {
+      // Reset if gap is larger than 1 day (ignoring same-day duplicates if any)
+      currentStreak = 1;
+    }
+    // If diffDays === 0 (same day), do nothing, keep streak count
+
+    if (currentStreak > maxStreak) {
+      maxStreak = currentStreak;
+    }
+  }
+
+  return maxStreak;
+};
+
+export const getWeeklyStats = (habits: Habit[]) => {
+  const days = [];
+  const today = new Date();
+  
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const iso = d.toISOString().split('T')[0];
+    const dayName = d.toLocaleDateString('es-ES', { weekday: 'short' });
+    
+    let completedCount = 0;
+    habits.forEach(h => {
+      if (h.completedDates.includes(iso)) completedCount++;
+    });
+
+    days.push({
+      date: iso,
+      dayName: dayName.charAt(0).toUpperCase(), // L, M, X...
+      count: completedCount,
+      total: habits.length > 0 ? habits.length : 1 // Avoid division by zero
+    });
+  }
+  return days;
+};
+
+export const getConsistencyScore = (habits: Habit[]): number => {
+  if (habits.length === 0) return 0;
+  
+  // Check last 30 days
+  let totalPossible = 0;
+  let totalCompleted = 0;
+  const today = new Date();
+
+  for (let i = 0; i < 30; i++) {
+     const d = new Date(today);
+     d.setDate(d.getDate() - i);
+     const iso = d.toISOString().split('T')[0];
+     
+     // We assume the habit existed (simple logic for now)
+     totalPossible += habits.length;
+     habits.forEach(h => {
+       if (h.completedDates.includes(iso)) totalCompleted++;
+     });
+  }
+
+  return totalPossible === 0 ? 0 : Math.round((totalCompleted / totalPossible) * 100);
 };
 
 // --- Atomic Habits Microcopy (Spanish) ---
@@ -90,6 +169,14 @@ export const getMicrocopy = (state: 'empty' | 'progress' | 'completed' | 'streak
     return "¿Perdiste un día? No hay problema. Solo retómalo hoy.";
   }
   return ENCOURAGEMENT_QUOTES[Math.floor(Math.random() * ENCOURAGEMENT_QUOTES.length)];
+};
+
+export const getAnalyticsQuote = (score: number): string => {
+  if (score >= 90) return "Eres el arquitecto de tus hábitos. Dominio total.";
+  if (score >= 70) return "Estás construyendo inercia. No te detengas.";
+  if (score >= 50) return "Estás en el camino. La consistencia vence a la intensidad.";
+  if (score > 0) return "Todo gran roble comienza como una bellota. Sigue regando.";
+  return "El mejor momento para plantar un árbol fue hace 20 años. El segundo mejor es hoy.";
 };
 
 // --- UUID ---

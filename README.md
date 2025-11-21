@@ -1,20 +1,36 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Atomic Daily
 
-# Run and deploy your AI Studio app
+Un rastreador de hábitos minimalista y enfocado, inspirado en los principios del libro "Hábitos Atómicos". Esta aplicación está diseñada para ayudarte a construir consistencia a través de una interfaz limpia, perfiles personalizables y pequeñas celebraciones diarias.
 
-This contains everything you need to run your app locally.
+## Características Principales
 
-View your app in AI Studio: https://ai.studio/apps/drive/1aDY5Q6hIoLtwpRQYWjwN1v6P6YTZ50op
+*   **Multi-perfil:** Crea espacios separados para diferentes contextos (ej. Personal, Trabajo, Salud) con sus propios temas de color.
+*   **Gestión de Hábitos:** Añade, edita, elimina y reordena tus hábitos fácilmente. Incluye soporte para iconos (emojis).
+*   **Seguimiento de Rachas:** Visualiza tu consistencia con contadores de días consecutivos (streaks).
+*   **Progreso Diario:** Barra de progreso visual y frases motivacionales que cambian según tu avance.
+*   **Celebración:** Efecto de confeti automático al completar todos los hábitos del día.
+*   **Persistencia Local:** Tus datos se guardan automáticamente en el navegador (LocalStorage), asegurando privacidad total sin necesidad de cuentas.
+*   **Animaciones Fluidas:** Experiencia de usuario pulida con transiciones suaves y listas arrastrables (drag & drop).
 
-## Run Locally
+## Tecnologías Utilizadas
 
-**Prerequisites:**  Node.js
+*   **Core:** React 19, TypeScript
+*   **Estilos:** Tailwind CSS
+*   **Animaciones:** Framer Motion
+*   **Iconos:** Lucide React
 
+## Instalación
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1.  Clona el repositorio.
+2.  Instala las dependencias:
+    ```bash
+    npm install
+    ```
+3.  Inicia el servidor de desarrollo:
+    ```bash
+    npm run dev
+    ```
+4.  Para construir la versión de producción:
+    ```bash
+    npm run build
+    ```
