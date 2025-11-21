@@ -1,0 +1,5 @@
+{
+  "name": "Atomic Daily",
+  "description": "A focused, profile-based daily habit tracker inspired by Atomic Habits. Features multiple local profiles, daily resets, and delightful micro-interactions.",
+  "requestFramePermissions": []
+}
